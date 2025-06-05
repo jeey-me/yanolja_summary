@@ -43,17 +43,21 @@ def get_db():
 @app.get("/")
 # async def home(request: Request):
 async def home(request: Request, db: Session = Depends(get_db)):
-    # accommodation_info에서 ID정보와 이름 정보를 가져오기
     accommodation_list = db.query(models.AccommodationInfo.id, models.AccommodationInfo.name).all()
+    #  accommodation_list = [{"id": item[0], "name": item[1]} for item in accommodation_list]
+    acc_list = []
+    for acc in accommodation_list : 
+        item = {}
+        # print (acc.id, acc.name)
+        item['id'] = acc.id 
+        item["name"] = acc.name
+        acc_list.append(item)
+        print(acc_list)
 
-    # 튜플을 딕셔너리 리스트로 변환
-    accommodation_list = [{"id": item[0], "name": item[1]} for item in accommodation_list]
-    # for accommodation in accommodation_list:
-    #     print(f"숙소 ID: {accommodation['id']}, 숙소 이름: {accommodation['name']}")
-    return accommodation_list
- 
+    return acc_list
+
 @app.get("/review_summary/{id}")
-async def home(request: Request, id: int , db: Session = Depends(get_db)):
+async def review_summary(request: Request, id: int , db: Session = Depends(get_db)):
     print("id : ", id)
     # 폼에서 숙소 ID를 가져옴
     review = db.query(models.ReviewSummary).filter(models.ReviewSummary.id == id).order_by(models.ReviewSummary.id.desc()).first()
