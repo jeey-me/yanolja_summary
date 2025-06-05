@@ -1,30 +1,32 @@
-""" 
-simple todo
-fastAPI를 활용한 DB CRUD
-명령 실행 : 
-  - uvicorn main:app --reload
-  또는
-  - python app_start.py
-"""
-# main.py
 
-from fastapi import FastAPI, Request, Depends, Form, status
-from fastapi.templating import Jinja2Templates
+# main.py
+from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+from typing import List, Optional
 
 from database import engine, sessionlocal
 from sqlalchemy.orm import Session
-import models
+import models, schemas
+
 
 # models에 정의한 모든 클래스, 연결한 DB엔진에 테이블로 생성
 models.Base.metadata.create_all(bind=engine)
 
-# FastAPI() 객체 생성
-app = FastAPI()
+app = FastAPI(title="숙소 리뷰 요약 서비스 API")
+
+# CORS 설정 (Streamlit과 통신을 위해)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # html 템플릿 폴더를 지정하여 jinja템플릿 객체 생성
-templates = Jinja2Templates(directory="templates")
+# templates = Jinja2Templates(directory="templates")
 
 # static 폴더(정적파일 폴더)를 app에 연결
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -39,10 +41,28 @@ def get_db():
         db.close()
 
 @app.get("/")
+# async def home(request: Request):
 async def home(request: Request, db: Session = Depends(get_db)):
-    todos = db.query(models.Todo).order_by(models.Todo.id.desc())
-    # print(todos.count())
-    if todos.count() == 0:
-        todos = 0
+    # accommodation_info에서 ID정보와 이름 정보를 가져오기
+    accommodation_list = db.query(models.AccommodationInfo.id, models.AccommodationInfo.name).all()
 
-    return templates.TemplateResponse("index.html", {"request": request, "todos": todos})
+    # 튜플을 딕셔너리 리스트로 변환
+    accommodation_list = [{"id": item[0], "name": item[1]} for item in accommodation_list]
+    # for accommodation in accommodation_list:
+    #     print(f"숙소 ID: {accommodation['id']}, 숙소 이름: {accommodation['name']}")
+    return accommodation_list
+ 
+@app.get("/review_summary/{id}")
+async def home(request: Request, id: int , db: Session = Depends(get_db)):
+    print("id : ", id)
+    # 폼에서 숙소 ID를 가져옴
+    review = db.query(models.ReviewSummary).filter(models.ReviewSummary.id == id).order_by(models.ReviewSummary.id.desc()).first()
+    # Pydantic 스키마 객체로 변환
+    review_response = schemas.ReviewSummaryResponse(
+            id=review.id,
+            accommodation_id=review.accommodation_id,
+            summary_good=review.summary_good,
+            summary_bad=review.summary_bad,
+            date=review.date,
+            )
+    return review_response

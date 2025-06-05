@@ -1,28 +1,16 @@
+
 # database.py
 """
+pip install PyMySQL
 pip install sqlalchemy
+pip install cryptography
 DB 연결과 관련된 정보 설정
 """
-
-import os
-from openai import OpenAI
-from dotenv import load_dotenv
-
-# 절대경로나 정확한 상대경로 지정
-load_dotenv('C:/Users/Admin/kpmg_future_lab/LLM_ex/yanolja_summary/.env', override=True)
-USER = os.environ.get("USER")
-PASSWORD = os.environ.get("PASSWORD")
-HOST = os.environ.get("HOST")
-DB_NAME = os.environ.get("DB_NAME")
-
-# 환경 변수에서 API 키 가져오기
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from db_env import USER, PASSWORD, HOST, DB_NAME
-
+from dotenv import load_dotenv
+import os
 
 # sqlite 연결 시
 # DB_URL = 'sqlite:///todo.sqlite3'
@@ -30,12 +18,20 @@ from db_env import USER, PASSWORD, HOST, DB_NAME
 # 데이터베이스에 연결하는 엔진을 생성하는 함수
 # engine = create_engine(DB_URL, connect_args={'check_same_thread': False})
 
+
+# mysql 환경변수 로딩
+load_dotenv('.env', override=True)
+
+# 메모리에 로딩된 값을 api_key 변수에 대입
+USER = os.environ.get("USER")
+PASSWORD = os.environ.get("PASSWORD")
+HOST = os.environ.get("HOST")
+DB_NAME = os.environ.get("DB_NAME")
+
 # mysql 연결 시
-"mysql+pymysql://user_ID:password@host_IP:3306/DB_name"
+# "mysql+pymysql://user_ID:password@host_IP:3306/DB_name"
 db_url = f"mysql+pymysql://{USER}:{PASSWORD}@{HOST}:3306/{DB_NAME}"
 engine = create_engine(db_url)
-
-
 
 # 데이터베이스와 상호 작용하는 세션을 생성하는 클래스
 sessionlocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -46,6 +42,6 @@ Base = declarative_base()
 """
 declarative_base 클래스는 다음과 같은 기능을 제공함
 - 데이터베이스 모델 클래스를 정의하는 기능
-- 데이터베이스 모델 클래스와 데이터베이스 테이블을 연결하는 기능
+- 데이터베이스 모델 클래스와 데이터베이스 테이블을 연결하는 기능Add commentMore actions
 - 데이터베이스 모델 클래스를 사용하여 데이터베이스와 상호 작용하는 기능
 """

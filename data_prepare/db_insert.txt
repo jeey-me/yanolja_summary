@@ -1,0 +1,35 @@
+
+pip install sqlalchemy
+pip install pymysql
+pip install cryptography
+
+
+# 판다스 데이터 프레임으로 로딩
+# mysql db 테이블에 데이터 저장하기
+# DB 명 : yanolja_db
+
+
+# 테이블(숙소 정보, 숙소 리뷰)
+# 숙소 정보 : 숙소 ID, 숙소 이름, 숙소 주소, 숙소 전화번호, 숙소 등급
+# 숙소 리뷰 : 리뷰 ID, 숙소 ID, 리뷰 내용, 리뷰 평점, 리뷰 작성일
+
+
+# 1. mysql yanolja_db 생성
+CREATE DATABASE yanolja_db;
+
+# 2. 개발자 계정 만들기
+# 로컬접속
+# CREATE USER '개발자계정'@'localhost' IDENTIFIED BY '패스워드';
+CREATE USER 'joy'@'localhost' IDENTIFIED BY '1234';
+
+# 리모트 접속(외부컴퓨터에서)
+# %의 의미 : 외부 접속이 되도록 함
+CREATE USER 'joy'@'%' IDENTIFIED BY '1234';
+
+# 3. works_db의 모든 테이블에 접근권한 부여
+# 로컬에서 접근권한 부여
+# GRANT ALL PRIVILEGES ON 데이터베이스.* TO '개발자계정'@'localhost';
+GRANT ALL PRIVILEGES ON yanolja_db.* TO 'joy'@'localhost';
+
+# 외부에서 접근권한 부여
+GRANT ALL PRIVILEGES ON yanolja_db.* TO 'joy'@'%';
